@@ -1,0 +1,118 @@
+Web VPython 3.2
+from vpython import *
+
+
+#### Modelagem
+
+engrenagem_amarela = cylinder(pos = vector(0,0,0) , axis = vector(0,0,0.3) , radius = 1, color = vec(1,1,0)) #amarelo
+
+engrenagem_verde = cylinder(pos = vector(0,0,2) , axis = vector(0,0,0.3) , radius = 1, color = vec(0,1,0)) #verde
+
+engrangem_meio = cylinder(pos = vector(0,0,1) , axis = vector(0,0,0.3) , radius = 1, color = vec(0,0,0))
+
+suporte = cylinder(pos = vector(0,0,0) , axis = vector(0,0,2.31) , radius = 0.11, color = vec(0.5,1,1))
+
+
+#### Define a Angulação entre cada Imã
+
+def angulo_imas(n):
+#n = numero de imas
+    angulos = [0] * n
+    for i in range(n):
+        angulo_um = pi * 360 / n
+        angulos[i] = angulo_um/180 * (i + 1)
+    return angulos
+
+
+#### Funções que criam os Imãs na engrenagem amarela, na engrenagem verde e as peças ferromagnéticas
+
+def cia(a,n,r):
+#a = lista de angulos de cada ima
+# n = numero de imas
+#r = raio no qual os imas ficarao
+    cxs = [0] * n
+    cys = [0] * n
+    imasa = [0] * n
+    for i in range(n):
+        cxs[i] = r * cos(a[i])
+        cys[i] = r * sin(a[i])
+        imasa[i] = cylinder(pos = vec(cxs[i] , cys[i] , 0 - 0.01) , axis = vec(0,0,0.32) , radius = 0.1 , color = vec(1,1,1))
+    return imasa
+     
+def civ(a,n,r):
+#a = lista de angulos de cada ima
+# n = numero de imas
+#r = raio no qual os imas ficarao
+    cxs = [0] * n
+    cys = [0] * n
+    imasv = [0] * n
+    for i in range(n):
+        cxs[i] = r * cos(a[i])
+        cys[i] = r * sin(a[i])
+        imasv[i] = cylinder(pos = vec(cxs[i] , cys[i] , 2 - 0.01) , axis = vec(0,0,0.32) , radius = 0.1 , color = vec(1,1,1))
+    return imasv
+
+def cpf(a,n,r):
+#a = lista de angulos de cada ima
+# n = numero de imas
+#r = raio no qual os imas ficarao
+    cxs = [0] * n
+    cys = [0] * n
+    peças_fm = [0] * n
+    for i in range(n):
+        cxs[i] = r * cos(a[i])
+        cys[i] = r * sin(a[i])
+        peças_fm[i] = cylinder(pos = vec(cxs[i] , cys[i] , 1 - 0.01) , axis = vec(0,0,0.32) , radius = 0.1 , color = vec(1,1,1))
+
+
+#### Inputs
+
+imasa= float(input('Digite o maior número de imãs:'))
+imasv= float(input('Digite o menor número de imãs:'))
+va= float(input('Digite a velocidade de rotação em rad/s:'))
+ns= (imasa/2)+(imasv/2)
+
+
+#### Parametrização
+
+anga = angulo_imas(imasa)    #### Encontra os angulos entre os imas na engrenagem amarela
+imasamarelos = cia(anga,imasa,0.7)   #### Cria os Imãs na engrenagem amaarela
+angv = angulo_imas(imasv)    #### Encontra os angulos entre os imas na engranagem verde
+imasverdes = civ(angv,imasv,0.7)    #### Cria os Imãs na engrenagem verde
+angfm = angulo_imas(ns) ### Encontra o angulo entre as peças ferromagnéticas
+cpf(angfm,ns,0.7) ### Cria as peças ferromagnéticas
+gr = (imasa/2)/(imasv/2)   #### Gear Ratio
+vv= va*gr   ##### velocidade * razão entre os imãs =  velocidade da parte com mais imãs
+
+
+
+#### Malha temporal
+
+t=0
+dt= 0.01
+tf= 10e4
+
+
+####Atualização dos angulos e do vetor posição dos imãs
+
+while (t<tf):
+    rate(25)
+    dsa= va*t  #velocidade angular * delta t = angulo percorrido
+    dsv= vv*t
+    for i in range(imasa):
+        anga[i] = -anga[i] - dsa
+        #angulo percorrido pelos imas amarelos
+    for i in range(imasv):
+        angv[i] = - angv[i] + dsv
+        #angulo percorrido pelos imas verdes
+    #atualização das posições novas coordenadas:
+    for i in range(imasa):
+        cdx = 0.7 * cos(anga[i])
+        cdy = 0.7 * sin(anga[i])
+        imasamarelos[i].pos = vec(cdx,cdy,0 - 0.01)
+        
+    for i in range(imasv):
+        cdxv = 0.7 * cos(angv[i])
+        cdyv = 0.7 * sin(angv[i])
+        imasverdes[i].pos = vec(cdxv,cdyv,2 - 0.01)
+    t = t+dt
