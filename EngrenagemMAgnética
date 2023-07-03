@@ -116,3 +116,5 @@ while (t<tf):
         cdyv = 0.7 * sin(angv[i])
         imasverdes[i].pos = vec(cdxv,cdyv,2 - 0.01)
     t = t+dt
+    print("Distancia percorrida na engrenagem amarela:" , dsa,'rad')
+    print("Distancia percorrida na engrenagem verde:" , dsv,'rad')
